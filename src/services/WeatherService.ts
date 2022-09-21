@@ -62,7 +62,7 @@ export const weatherAPI = createApi({
                 params: {
                     lat: lat,
                     lon: lon,
-                    appid: 'ec0e499f51635cb60d364495d94b69ba'
+                    appid: process.env.REACT_APP_SECRET_CODE
                 }
             })
         })

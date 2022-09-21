@@ -1,22 +1,32 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './App.css';
-import {CurrentWeather, weatherAPI} from "../../services/WeatherService";
+import {weatherAPI} from "../../services/WeatherService";
+import {locationAPI} from "../../services/LocationServices";
 
 function App() {
-    const {data: currentWeather, error: weatherError, isLoading: weatherIsLoading} = weatherAPI.useGetWeatherQuery({lat: 53.6841076,lon: 23.850851});
+    const {data: currentWeather, error: weatherError, isLoading: weatherIsLoading} = weatherAPI.useGetWeatherQuery({lat: 16.9690004,lon: 7.950976});
+    const {data: currentLocation, error: locationError, isLoading: locationIsLoading} = locationAPI.useGetLocationQuery('Эйгерды');
+
+    console.log(currentLocation);
+
+    const [inputText, setInputText] = useState<string>('');
+    const inputChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setInputText(event.currentTarget.value);
+    }
+
 
 
     return (
         <div className="App">
             <span>Текущий город: {weatherIsLoading ? '--/--' : currentWeather && currentWeather.name}</span>
             <div>
-                <input type="text"/>
+                <input value={inputText} onChange={inputChangeHandler} type="text"/>
                 <button>Найти</button>
             </div>
             <div>
                 <span>Результаты поиска:</span>
             </div>
-            <img src="http://openweathermap.org/img/wn/10d@2x.png" alt="weather_icon"/>
+            {currentWeather && <img src={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`} alt="weather_icon"/>}
             <div>
                 <span>Температура: {weatherIsLoading ? '--/--' : currentWeather && currentWeather.main.temp}</span>
             </div>
