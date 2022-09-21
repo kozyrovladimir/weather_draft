@@ -2,19 +2,22 @@ import React, {useState} from 'react';
 import './App.css';
 import {weatherAPI} from "../../services/WeatherService";
 import {locationAPI} from "../../services/LocationServices";
+import {useAppDispatch, useAppSelector} from "../../hooks/redux";
+import {setLocation} from "../../store/reducers/location.slice";
 
 function App() {
-    const {data: currentWeather, error: weatherError, isLoading: weatherIsLoading} = weatherAPI.useGetWeatherQuery({lat: 16.9690004,lon: 7.950976});
-    const {data: currentLocation, error: locationError, isLoading: locationIsLoading} = locationAPI.useGetLocationQuery('Эйгерды');
-
-    console.log(currentLocation);
+    const {lat, lon} = useAppSelector(state => state.locationReducer);
+    const dispatch = useAppDispatch();
 
     const [inputText, setInputText] = useState<string>('');
     const inputChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputText(event.currentTarget.value);
     }
 
+    const {data: currentLocation, error: locationError, isLoading: locationIsLoading} = locationAPI.useGetLocationQuery(inputText);
+    const {data: currentWeather, error: weatherError, isLoading: weatherIsLoading} = weatherAPI.useGetWeatherQuery({lat,lon});
 
+    console.log(currentLocation);
 
     return (
         <div className="App">
@@ -22,6 +25,13 @@ function App() {
             <div>
                 <input value={inputText} onChange={inputChangeHandler} type="text"/>
                 <button>Найти</button>
+                <div>
+                    {inputText && currentLocation && currentLocation.map(item => (
+                        <div>
+                            <span onClick={() => {dispatch(setLocation({lat: item.lat, lon: item.lon}))}}>{item.name} ({item.country})</span>
+                        </div>
+                    ))}
+                </div>
             </div>
             <div>
                 <span>Результаты поиска:</span>
