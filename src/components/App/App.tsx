@@ -4,17 +4,20 @@ import {weatherAPI} from "../../services/WeatherService";
 import {locationAPI} from "../../services/LocationServices";
 import {useAppDispatch, useAppSelector} from "../../hooks/redux";
 import {setLocation} from "../../store/reducers/location.slice";
+import {useDebounce} from "../../hooks/useDebounce";
 
 function App() {
     const {lat, lon} = useAppSelector(state => state.locationReducer);
     const dispatch = useAppDispatch();
 
-    const [inputText, setInputText] = useState<string>('');
+    const [value, setValue] = useState<string>('');
+    const debouncedValue = useDebounce(value, 1000);
+
     const inputChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setInputText(event.currentTarget.value);
+        setValue(event.currentTarget.value);
     }
 
-    const {data: currentLocation, error: locationError, isLoading: locationIsLoading} = locationAPI.useGetLocationQuery(inputText);
+    const {data: currentLocation, error: locationError, isLoading: locationIsLoading} = locationAPI.useGetLocationQuery(debouncedValue);
     const {data: currentWeather, error: weatherError, isLoading: weatherIsLoading} = weatherAPI.useGetWeatherQuery({lat,lon});
 
     console.log(currentLocation);
@@ -23,10 +26,10 @@ function App() {
         <div className="App">
             <span>Текущий город: {weatherIsLoading ? '--/--' : currentWeather && currentWeather.name}</span>
             <div>
-                <input value={inputText} onChange={inputChangeHandler} type="text"/>
+                <input value={value} onChange={inputChangeHandler} type="text"/>
                 <button>Найти</button>
                 <div>
-                    {inputText && currentLocation && currentLocation.map(item => (
+                    {debouncedValue && currentLocation && currentLocation.map(item => (
                         <div>
                             <span onClick={() => {dispatch(setLocation({lat: item.lat, lon: item.lon}))}}>{item.name} ({item.country})</span>
                         </div>
